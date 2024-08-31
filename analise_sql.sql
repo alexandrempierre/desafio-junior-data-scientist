@@ -169,7 +169,7 @@ FROM
   `datario.adm_central_atendimento_1746.chamado`
 WHERE
   -- data_particao = "2024-08-30"
-  data_inicio BETWEEN "2022-01-01" AND "2023-12-31"
+  CAST(data_inicio AS DATE) BETWEEN "2022-01-01" AND "2023-12-31"
   AND data_particao <> CAST(data_inicio AS DATE);
 
 
@@ -178,7 +178,7 @@ SELECT
 FROM
   `datario.adm_central_atendimento_1746.chamado`
 WHERE
-  data_inicio BETWEEN "2022-01-01" AND "2023-12-31"
+  CAST(data_inicio AS DATE) BETWEEN "2022-01-01" AND "2023-12-31"
   AND data_particao NOT BETWEEN "2022-01-01" AND "2023-12-31"; -- 0
 
 /*
@@ -192,7 +192,7 @@ FROM
   `datario.adm_central_atendimento_1746.chamado`
 WHERE
   data_particao BETWEEN "2022-01-01" AND "2023-12-31"
-  AND data_inicio BETWEEN "2022-01-01" AND "2023-12-31"
+  AND CAST(data_inicio AS DATE) BETWEEN "2022-01-01" AND "2023-12-31"
   AND subtipo = "Perturbação do sossego";
 
 /*
@@ -206,7 +206,7 @@ SELECT
 FROM
   `datario.adm_central_atendimento_1746.chamado` chamado
   INNER JOIN `datario.turismo_fluxo_visitantes.rede_hoteleira_ocupacao_eventos` eventos ON (
-    chamado.data_inicio BETWEEN eventos.data_inicial AND eventos.data_final
+    CAST(chamado.data_inicio AS DATE) BETWEEN eventos.data_inicial AND eventos.data_final
   )
 WHERE
   data_particao BETWEEN "2022-01-01" AND "2023-12-31"
@@ -215,30 +215,36 @@ WHERE
 
 /*
 8. Quantos chamados desse subtipo foram abertos em cada evento?
-Resposta: 518 no Rock in Rio, 197 no Carnaval e 81 no Reveillon.
+Resposta: 834 no Rock in Rio, 241 no Carnaval e 139 no Reveillon.
 */
 
 SELECT
   eventos.evento,
-  COUNT(chamado.id_chamado),
+  COUNT(chamado.id_chamado) AS count_chamados,
 FROM
   `datario.adm_central_atendimento_1746.chamado` chamado
   INNER JOIN `datario.turismo_fluxo_visitantes.rede_hoteleira_ocupacao_eventos` eventos ON (
-    chamado.data_inicio BETWEEN eventos.data_inicial AND eventos.data_final
+    CAST(chamado.data_inicio AS DATE) BETWEEN eventos.data_inicial AND eventos.data_final
   )
 WHERE
   data_particao BETWEEN "2022-01-01" AND "2023-12-31"
   AND subtipo = "Perturbação do sossego"
 GROUP BY
-  eventos.evento;
+  eventos.evento
+ORDER BY
+  COUNT(chamado.id_chamado) DESC;
 
 /*
 9. Qual evento teve a maior média diária de chamados abertos desse subtipo?
-Resposta: Rock in Rio com 103,6 chamados por dia.
+Resposta: Rock in Rio com aproximadamente 119,14 chamados por dia.
 */
 
 WITH evento_duracao AS (
-  SELECT evento, SUM(DATE_DIFF(data_final, data_inicial, DAY)) AS duracao FROM `datario.turismo_fluxo_visitantes.rede_hoteleira_ocupacao_eventos` GROUP BY evento
+  SELECT
+    evento,
+    SUM(DATE_DIFF(data_final, data_inicial, DAY) + 1) AS duracao
+  FROM `datario.turismo_fluxo_visitantes.rede_hoteleira_ocupacao_eventos`
+  GROUP BY evento
 )
 SELECT
   eventos.evento,
@@ -246,7 +252,7 @@ SELECT
 FROM
   `datario.adm_central_atendimento_1746.chamado` chamado
   INNER JOIN `datario.turismo_fluxo_visitantes.rede_hoteleira_ocupacao_eventos` eventos ON (
-    chamado.data_inicio BETWEEN eventos.data_inicial AND eventos.data_final
+    CAST(chamado.data_inicio AS DATE) BETWEEN eventos.data_inicial AND eventos.data_final
   )
   INNER JOIN evento_duracao ON (
     eventos.evento = evento_duracao.evento
@@ -259,13 +265,18 @@ GROUP BY
 
 /*
 10. Compare as médias diárias de chamados abertos desse subtipo durante os eventos específicos (Reveillon, Carnaval e Rock in Rio) e a média diária de chamados abertos desse subtipo considerando todo o período de 01/01/2022 até 31/12/2023.
-Resposta: A média de chamados do intervalo (aprox 58,75 chamados/dia) é menor
-que as de Rock in Rio (103,6 chamados/dia) e Carnaval (aprox 65,67 chamados/dia)
-e menor que Reveillon (40.5 chamados/dia).
+Resposta: A média de chamados do intervalo (aprox 58,67 chamados/dia) é menor 
+que a de  Rock in Rio (aprox 119,14 chamados/dia) e Carnaval (60,25 chamados/dia)
+e maior que Reveillon (aprox 46,33 chamados/dia).
 */
 
 WITH evento_duracao AS (
-  SELECT evento, SUM(DATE_DIFF(data_final, data_inicial, DAY)) AS duracao FROM `datario.turismo_fluxo_visitantes.rede_hoteleira_ocupacao_eventos` GROUP BY evento
+  SELECT 
+    evento,
+    SUM(DATE_DIFF(data_final, data_inicial, DAY) + 1) AS duracao
+  FROM
+    `datario.turismo_fluxo_visitantes.rede_hoteleira_ocupacao_eventos`
+  GROUP BY evento
 ),
 media_evento AS (
   SELECT
@@ -274,7 +285,7 @@ media_evento AS (
   FROM
     `datario.adm_central_atendimento_1746.chamado` chamado
     INNER JOIN `datario.turismo_fluxo_visitantes.rede_hoteleira_ocupacao_eventos` eventos ON (
-      chamado.data_inicio BETWEEN eventos.data_inicial AND eventos.data_final
+      cast(chamado.data_inicio as DATE) BETWEEN eventos.data_inicial AND eventos.data_final
     )
     INNER JOIN evento_duracao ON (
       eventos.evento = evento_duracao.evento
@@ -288,7 +299,7 @@ media_evento AS (
 media_intervalo AS (
   SELECT
     "Intervalo de 01/01/2022 a 31/12/2023" AS evento,
-    COUNT(id_chamado) / DATE_DIFF("2023-12-31", "2022-01-01", DAY) AS chamados_por_dia
+    COUNT(id_chamado) / (DATE_DIFF("2023-12-31", "2022-01-01", DAY) + 1) AS chamados_por_dia
   FROM 
     `datario.adm_central_atendimento_1746.chamado`
   WHERE
@@ -299,6 +310,3 @@ SELECT evento, chamados_por_dia FROM media_evento
 UNION ALL
 SELECT evento, chamados_por_dia FROM media_intervalo
 ORDER BY chamados_por_dia DESC;
-
-
-

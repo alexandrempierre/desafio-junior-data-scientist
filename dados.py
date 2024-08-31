@@ -27,7 +27,7 @@ def chamado_1746() -> pd.DataFrame:
             `datario.adm_central_atendimento_1746.chamado`
         WHERE
             data_particao BETWEEN '2022-01-01' AND '2023-12-31'
-            AND data_inicio BETWEEN '2022-01-01' AND '2023-12-31'
+            AND EXTRACT(DATE FROM data_inicio) BETWEEN '2022-01-01' AND '2023-12-31'
     """
     parquet_chamado_path = Path("chamado_1746.parquet")
     if parquet_chamado_path.exists():
