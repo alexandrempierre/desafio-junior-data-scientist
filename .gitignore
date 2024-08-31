@@ -8,6 +8,9 @@ __pycache__/
 # dotenv
 .env
 
+# project specific
+*.parquet
+
 # Created by https://www.toptal.com/developers/gitignore/api/jupyternotebooks
 # Edit at https://www.toptal.com/developers/gitignore?templates=jupyternotebooks
 
