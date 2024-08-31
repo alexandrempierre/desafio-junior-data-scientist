@@ -67,5 +67,7 @@ def eventos() -> pd.DataFrame:
             billing_project_id=BILLING_PROJECT_ID,
             query_project_id="datario",
         )
+        df_eventos["data_inicial"] = pd.to_datetime(df_eventos["data_inicial"])
+        df_eventos["data_final"] = pd.to_datetime(df_eventos["data_final"])
         df_eventos.to_parquet(parquet_eventos_path)
     return df_eventos
