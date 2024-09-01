@@ -28,6 +28,12 @@ pip install -r requirements.txt
 
 4. nesse momento já se pode rodar o notebook `analise_sql.ipynb`, recomendo fazê-lo antes de testar a visualização para gerar os arquivos locais com os dados que também serão usados na visualização e cujo download pode demorar um pouco
 
+5. para abrir a visualização do streamlit basta rodar o arquivo `main.py`:
+
+```
+python main.py
+```
+
 
 # Desafio Técnico - Cientista de Dados Júnior
 
