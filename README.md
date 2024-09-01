@@ -1,3 +1,34 @@
+# Rodando o projeto
+
+Antes de começar, é necessário fornecer um id de projeto para que os dados possam ser baixados do Google Cloud Platform, basta renomear o arquivo `.env.example` para `.env` e preencher a única variável contida nele.
+
+1. a biblioteca `basedosdados` necessária para resolver o desafio, no até o dia 01/09/2024 só funciona com `3.7.1 <= python < 3.11`, para ter acesso a múltiplas versões do Python optei por usar o `pyenv` e trabalhar com Python 3.10.14;
+
+2. para ter acesso a um ambiente isolado, pode ser interessante criar um ambiente isolado com `conda` ou `venv`, recomendo o último:
+
+### Windows
+
+```
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+### Linux
+
+```
+python -m venv .venv
+source .venv/bin/activate
+```
+
+3. independente do uso ou não de ambiente isolado, é necessário baixar os pacotes python usados no projeto:
+
+```
+pip install -r requirements.txt
+```
+
+4. nesse momento já se pode rodar o notebook `analise_sql.ipynb`, recomendo fazê-lo antes de testar a visualização para gerar os arquivos locais com os dados que também serão usados na visualização e cujo download pode demorar um pouco
+
+
 # Desafio Técnico - Cientista de Dados Júnior
 
 ## Descrição
